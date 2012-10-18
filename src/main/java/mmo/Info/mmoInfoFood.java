@@ -21,6 +21,7 @@ import mmo.Core.InfoAPI.MMOInfoEvent;
 import mmo.Core.MMOPlugin;
 import mmo.Core.MMOPlugin.Support;
 import mmo.Core.util.EnumBitSet;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,8 +37,8 @@ import org.getspout.spoutapi.gui.Screen;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class mmoInfoFood extends MMOPlugin implements Listener {
-	private HashMap<Player, CustomLabel> widgets = new HashMap();
-
+	private HashMap<Player, CustomLabel> widgets = new HashMap();	
+	
 	@Override
 	public EnumBitSet mmoSupport(EnumBitSet support) {
 		support.set(Support.MMO_NO_CONFIG);
@@ -80,7 +81,6 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 		public void onTick()
 		{
 			if (tick++ % 20 == 0) {
-				((InGameHUD) this.getScreen()).getHungerBar().setVisible(false);
 				setText(String.format(getScreen().getPlayer().getFoodLevel() + "/20"));
 			}
 		}
