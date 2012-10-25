@@ -18,6 +18,7 @@ package mmo.Info;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import mmo.Core.InfoAPI.MMOInfoEvent;
 import mmo.Core.MMOPlugin;
@@ -51,10 +52,10 @@ import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class mmoInfoFood extends MMOPlugin implements Listener {
 	private static final Map<Player, Widget> foodbar = new HashMap<Player, Widget>();
-	private static String config_displayas = "bar";
-	private boolean forceUpdate = true;
+	private static String config_displayas = "bar";	
 	private static Color redBar = new Color(0.69f,0.09f,0.12f,1f);
 	private static Color blueBar = new Color(0,0,1f,1f);
+	private static final Map<UUID, Boolean> updateStatuses = new HashMap<UUID, Boolean>();
 
 	@Override
 	public EnumBitSet mmoSupport(EnumBitSet support) {		
@@ -83,12 +84,12 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 					final CustomWidget widget = new CustomWidget();
 					foodbar.put(player, widget);
 					event.setWidget(plugin, widget);
-					forceUpdate = true;
+					updateStatuses.put(player.getUniqueId(), true);					
 				} else { 
 					player.getMainScreen().getHungerBar().setVisible(false);
 					CustomLabel label = (CustomLabel)new CustomLabel().setResize(true).setFixed(true);
-					label.setText("20/20");
-					forceUpdate = true;
+					label.setText("20/20");					
+					updateStatuses.put(player.getUniqueId(), true);
 					foodbar.put(player, label);
 					event.setWidget(this.plugin, label);
 				}
@@ -99,14 +100,16 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 
 	@EventHandler
 	public void onMMOFoodChange(FoodLevelChangeEvent event) {	
-		forceUpdate = true;
+		updateStatuses.put(event.getEntity().getUniqueId(), true);
 	}
 
 	public class CustomLabel extends GenericLabel
 	{
 		public void onTick() {						
-			if (forceUpdate) {
+			final boolean update = updateStatuses.containsKey(getScreen().getPlayer().getUniqueId()) ? updateStatuses.get(getScreen().getPlayer().getUniqueId()) : false;
+			if (update) {
 				setText(String.format(getScreen().getPlayer().getFoodLevel() + "/20"));
+				updateStatuses.put(getScreen().getPlayer().getUniqueId(), false);
 			}
 		}
 	}
@@ -125,7 +128,8 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 		}
 
 		public void onTick() {
-			if (forceUpdate) {
+			final boolean update = updateStatuses.containsKey(getScreen().getPlayer().getUniqueId()) ? updateStatuses.get(getScreen().getPlayer().getUniqueId()) : false;
+			if (update) {
 				final int playerFood = Math.max(0, Math.min( 100, (int) (getScreen().getPlayer().getFoodLevel()*5)));								
 				if (playerFood>=33 ) {			
 					slider.setColor(blueBar);				
@@ -133,7 +137,7 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 					slider.setColor(redBar); 				
 				}	
 				slider.setWidth(playerFood);
-				forceUpdate = false;
+				updateStatuses.put(getScreen().getPlayer().getUniqueId(), false);
 			}
 		}
 	}
