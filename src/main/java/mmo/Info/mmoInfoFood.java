@@ -46,12 +46,15 @@ import org.getspout.spoutapi.gui.Label;
 import org.getspout.spoutapi.gui.RenderPriority;
 import org.getspout.spoutapi.gui.Screen;
 import org.getspout.spoutapi.gui.Texture;
+import org.getspout.spoutapi.gui.Widget;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class mmoInfoFood extends MMOPlugin implements Listener {
-	private HashMap<Player, CustomLabel> widgets = new HashMap();
-	private static final Map<Player, CustomWidget> foodbar = new HashMap<Player, CustomWidget>();
+	private static final Map<Player, Widget> foodbar = new HashMap<Player, Widget>();
 	private static String config_displayas = "bar";
+	private boolean forceUpdate = true;
+	private static Color redBar = new Color(0.69f,0.09f,0.12f,1f);
+	private static Color blueBar = new Color(0,0,1f,1f);
 
 	@Override
 	public EnumBitSet mmoSupport(EnumBitSet support) {		
@@ -80,10 +83,13 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 					final CustomWidget widget = new CustomWidget();
 					foodbar.put(player, widget);
 					event.setWidget(plugin, widget);
+					forceUpdate = true;
 				} else { 
 					player.getMainScreen().getHungerBar().setVisible(false);
 					CustomLabel label = (CustomLabel)new CustomLabel().setResize(true).setFixed(true);
-					this.widgets.put(player, label);
+					label.setText("20/20");
+					forceUpdate = true;
+					foodbar.put(player, label);
 					event.setWidget(this.plugin, label);
 				}
 				event.setIcon("hunger.png");			
@@ -91,11 +97,15 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onMMOFoodChange(FoodLevelChangeEvent event) {	
+		forceUpdate = true;
+	}
+
 	public class CustomLabel extends GenericLabel
 	{
-		@EventHandler
-		public void onMMOFoodChange(FoodLevelChangeEvent event) {						
-			if (event instanceof Player) {
+		public void onTick() {						
+			if (forceUpdate) {
 				setText(String.format(getScreen().getPlayer().getFoodLevel() + "/20"));
 			}
 		}
@@ -108,20 +118,23 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 
 		public CustomWidget() {
 			super();
-			slider.setMargin(1).setPriority(RenderPriority.Normal).setHeight(5).setWidth(20).shiftXPos(1).shiftYPos(1);
-			bar.setUrl("bar10.png").setPriority(RenderPriority.Lowest).setHeight(7).setWidth(103).shiftYPos(0);			
-			this.setLayout(ContainerType.OVERLAY).setMinWidth(100).setMaxWidth(100);
+			slider.setMargin(1).setPriority(RenderPriority.Normal).setHeight(5).shiftXPos(1).shiftYPos(1);
+			bar.setUrl("bar10.png").setPriority(RenderPriority.Lowest).setHeight(7).setWidth(103).shiftYPos(0);
+			this.setLayout(ContainerType.OVERLAY).setMinWidth(103).setMaxWidth(103).setWidth(103);
 			this.addChildren(slider, bar);
 		}
 
-		@EventHandler
-		public void onMMOFoodChange(FoodLevelChangeEvent event) {
-			final int playerFood = (int) (getScreen().getPlayer().getFoodLevel()*5);						
-			if (playerFood>=33) {			
-				slider.setColor(new Color(0,0,1f,1f)).setWidth(playerFood); //Blue				
-			} else if (playerFood<33) {
-				slider.setColor(new Color(0.69f,0.09f,0.12f,1f)).setWidth(playerFood);  //Red				
-			}			
+		public void onTick() {
+			if (forceUpdate) {
+				final int playerFood = Math.max(0, Math.min( 100, (int) (getScreen().getPlayer().getFoodLevel()*5)));								
+				if (playerFood>=33 ) {			
+					slider.setColor(blueBar);				
+				} else  {
+					slider.setColor(redBar); 				
+				}	
+				slider.setWidth(playerFood);
+				forceUpdate = false;
+			}
 		}
 	}
 }
