@@ -34,6 +34,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.PluginManager;
 import org.getspout.spoutapi.gui.Color;
 import org.getspout.spoutapi.gui.ContainerType;
@@ -101,6 +102,11 @@ public class mmoInfoFood extends MMOPlugin implements Listener {
 	@EventHandler
 	public void onMMOFoodChange(FoodLevelChangeEvent event) {	
 		updateStatuses.put(event.getEntity().getUniqueId(), true);
+	}
+	
+	@EventHandler
+	public void onPlayerRespawn(PlayerRespawnEvent event) {	
+		updateStatuses.put(event.getPlayer().getUniqueId(), true);
 	}
 
 	public class CustomLabel extends GenericLabel

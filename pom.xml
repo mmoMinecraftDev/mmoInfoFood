@@ -5,7 +5,7 @@
 	<name>mmoInfoFood</name>
 	<groupId>mmo.Info</groupId>
 	<artifactId>mmoInfoFood</artifactId>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.3</version>
 	<description>Adds a {food} token to the mmoInfo token list.</description>
 	<url>http://github.com/mmoMinecraftDev/mmoInfoFood</url>
 
